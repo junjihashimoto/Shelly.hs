@@ -56,9 +56,8 @@ import Data.IORef (readIORef, modifyIORef, IORef)
 import Data.Monoid (mappend)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Control.Exception (SomeException, catch, throwIO, Exception)
+import Control.Exception.Safe
 import Data.Maybe (fromMaybe)
-import qualified Control.Monad.Catch as Catch
 import Control.Monad.Trans ( MonadIO, liftIO )
 import Control.Monad.Reader.Class (MonadReader, ask)
 import Control.Monad.Trans.Reader (runReaderT, ReaderT(..))
@@ -71,7 +70,7 @@ type ShIO a = Sh a
 
 newtype Sh a = Sh {
       unSh :: ReaderT (IORef State) IO a
-  } deriving (Applicative, Monad, MonadIO, MonadReader (IORef State), Functor, Catch.MonadMask)
+  } deriving (Applicative, Monad, MonadIO, MonadReader (IORef State), Functor, MonadCatch, MonadThrow, MonadMask)
 
 instance MonadBase IO Sh where
     liftBase = Sh . ReaderT . const
@@ -91,12 +90,12 @@ instance MonadBaseControl IO Sh where
     restoreM (StMSh m) = Sh . restoreM $ m
 #endif
 
-instance Catch.MonadThrow Sh where
-  throwM = liftIO . Catch.throwM
-
-instance Catch.MonadCatch Sh where
-  catch (Sh (ReaderT m)) c =
-      Sh $ ReaderT $ \r -> m r `Catch.catch` \e -> runSh (c e) r
+--instance MonadThrow Sh where
+--  throwM = liftIO . throwM
+--
+--instance MonadCatch Sh where
+--  catch (Sh (ReaderT m)) c =
+--      Sh $ ReaderT $ \r -> m r `catch` \e -> runSh (c e) r
 
 runSh :: Sh a -> IORef State -> IO a
 runSh = runReaderT . unSh

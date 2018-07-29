@@ -60,8 +60,7 @@ Library
     monad-control             >= 0.3.2 && < 1.1,
     lifted-base,
     lifted-async,
-    exceptions                >= 0.6,
-    enclosed-exceptions,
+    safe-exceptions,
     text, bytestring, async, transformers, transformers-base
 
   if impl(ghc >= 7.6.1)
@@ -143,8 +142,7 @@ Test-Suite shelly-testsuite
     monad-control,
     lifted-base,
     lifted-async,
-    enclosed-exceptions,
-    exceptions
+    safe-exceptions
 
   extensions:
     CPP

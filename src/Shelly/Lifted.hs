@@ -107,8 +107,7 @@ import System.IO ( Handle )
 import Data.Tree ( Tree )
 import qualified Filesystem.Path.CurrentOS as FP
 
-import Control.Exception.Lifted
-import Control.Exception.Enclosed
+import Control.Exception.Safe
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Identity
@@ -376,7 +375,7 @@ put :: MonadSh m => S.State -> m ()
 put = liftSh . S.put
 
 catch_sh :: (Exception e) => Sh a -> (e -> Sh a) -> Sh a
-catch_sh = Control.Exception.Lifted.catch
+catch_sh = catch
 {-# DEPRECATED catch_sh "use Control.Exception.Lifted.catch instead" #-}
 
 handle_sh :: (Exception e) => (e -> Sh a) -> Sh a -> Sh a
@@ -595,5 +594,5 @@ inspect = liftSh . S.inspect
 inspect_err :: (Show s, MonadSh m) => s -> m ()
 inspect_err = liftSh . S.inspect_err
 
-catchany :: MonadBaseControl IO m => m a -> (SomeException -> m a) -> m a
-catchany = Control.Exception.Lifted.catch
+catchany :: (MonadBaseControl IO m, MonadCatch m) => m a -> (SomeException -> m a) -> m a
+catchany = catch
